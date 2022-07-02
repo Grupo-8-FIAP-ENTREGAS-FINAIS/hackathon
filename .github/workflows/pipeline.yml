@@ -1,0 +1,89 @@
+# Nome do Workflow
+name: DevOpsLab Pipeline
+
+# Evento que irá acionar a pipeline
+on: 
+  push:
+    branches:
+      - main
+      - feature/pipeline
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7.11'
+
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      # - name: Install Requirements
+      #   run:  cd kit-hackathon-aso/backend/ && pip install flask flask-wtf coverage && cd ../..
+
+      # - name: Unit Test
+      #   run: |
+      #     cd kit-hackathon-aso/backend/ && coverage run -m unittest -v test && coverage xml -o cov/coverage.xml && cd ../..
+      # - name: SonarCloud Scan
+      #   uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
+
+      - name: Docker Login
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: | 
+          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > key.json
+          cat key.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev/
+      - name: Build Image & Push
+        env: 
+          ARTIFACT_REGISTRY: ${{ secrets.ARTIFACT_REGISTRY }}
+        run: | 
+          #Backend
+          docker build -t ${{ secrets.ARTIFACT_REGISTRY }}/myappbackend:latest ./kit-hackathon-aso/backend/
+          docker push ${{ secrets.ARTIFACT_REGISTRY }}/myappbackend:latest
+          #Frontend
+          docker build --build-arg BACKEND_URL=https://myappfrontend-oxfs72ct2q-uc.a.run.app/ -t ${{ secrets.ARTIFACT_REGISTRY }}/myappfrontend:latest ./kit-hackathon-aso/frontend/
+          docker push ${{ secrets.ARTIFACT_REGISTRY }}/myappfrontend:latest
+
+  DeployProd:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Auth GCP
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      - id: 'deploy-backend'
+        uses: 'google-github-actions/deploy-cloudrun@v0'
+        with:
+          service: 'myappbackend'
+          image: '${{ secrets.ARTIFACT_REGISTRY }}/myappbackend:latest'
+          env_vars: 'CLOUD_SQL_USERNAME=${{ secrets.CLOUD_SQL_USERNAME }},CLOUD_SQL_PASSWORD=${{ secrets.CLOUD_SQL_PASSWORD }},CLOUD_SQL_DATABASE_NAME=${{ secrets.CLOUD_SQL_DATABASE_NAME }},DB_LOCAL_HOST=${{ secrets.DB_LOCAL_HOST }}'
+
+
+      - name: Health check Backend
+        run: 'curl "${{ steps.deploy-backend.outputs.url }}"'
+      
+      - id: 'deploy-frontend'
+        uses: 'google-github-actions/deploy-cloudrun@v0'
+        with:
+          service: 'myappfrontend'
+          image: '${{ secrets.ARTIFACT_REGISTRY }}/myappfrontend:latest'
+          env_vars: 'BACKEND_URL=${{ steps.deploy-backend.outputs.url }}'
+
+      
+      - name: 'Health check Frontend'
+        run: 'curl "${{ steps.deploy-frontend.outputs.url }}"'
+
+
+      
