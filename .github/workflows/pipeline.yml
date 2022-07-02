@@ -20,18 +20,17 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
 
-      # - name: Install Requirements
-      #   run:  pip install flask flask-wtf coverage
+      - name: Install Requirements
+        run:  cd kit-hackathon-aso/backend/ && pip install flask flask-wtf coverage && cd ../..
 
-      # - name: Unit Test
-      #   run: |
-      #     coverage run -m unittest -v test
-      #     coverage xml -o cov/coverage.xml
-      # - name: SonarCloud Scan
-      #   uses: SonarSource/sonarcloud-github-action@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
+      - name: Unit Test
+        run: |
+          cd kit-hackathon-aso/backend/ && coverage run -m unittest -v test && coverage xml -o cov/coverage.xml && cd ../..
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
 
       - name: Docker Login
         env:
