@@ -69,7 +69,7 @@ jobs:
         with:
           service: 'myappbackend'
           image: '${{ secrets.ARTIFACT_REGISTRY }}/myappbackend:latest'
-          env_vars: 'CLOUD_SQL_USERNAME=VALUE1,CLOUD_SQL_PASSWORD=VALUE2,CLOUD_SQL_DATABASE_NAME=VALUE3,DB_LOCAL_HOST=VALUE4,CLOUD_SQL_CONNECTION_NAME=VALUE5'
+          env_vars: 'CLOUD_SQL_USERNAME=${{ secrets.CLOUD_SQL_USERNAME }},CLOUD_SQL_PASSWORD=${{ secrets.CLOUD_SQL_PASSWORD }},CLOUD_SQL_DATABASE_NAME=${{ secrets.CLOUD_SQL_DATABASE_NAME }},DB_LOCAL_HOST=${{ secrets.DB_LOCAL_HOST }},CLOUD_SQL_CONNECTION_NAME=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}'
 
 
       - name: Health check Backend
@@ -80,7 +80,7 @@ jobs:
         with:
           service: 'myappfrontend'
           image: '${{ secrets.ARTIFACT_REGISTRY }}/myappfrontend:latest'
-          env_vars: 'BACKEND_URL=VALUE1'
+          env_vars: 'BACKEND_URL=${{ steps.deploy-backend.outputs.url }}'
 
       
       - name: 'Health check Frontend'
