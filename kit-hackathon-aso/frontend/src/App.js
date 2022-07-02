@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
-require('dotenv').config();
-
 function App() {
    	const [data, setData] = useState([]);
 
