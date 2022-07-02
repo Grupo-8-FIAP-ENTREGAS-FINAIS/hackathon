@@ -69,15 +69,22 @@ jobs:
         with:
           service: 'myappbackend'
           image: '${{ secrets.ARTIFACT_REGISTRY }}/myappbackend:latest'
+          env_vars: 'CLOUD_SQL_USERNAME=VALUE1,CLOUD_SQL_PASSWORD=VALUE2,CLOUD_SQL_DATABASE_NAME=VALUE3,DB_LOCAL_HOST=VALUE4,CLOUD_SQL_CONNECTION_NAME=VALUE5'
+
+
+      - name: Health check Backend
+        run: 'curl "${{ steps.deploy-backend.outputs.url }}"'
       
       - id: 'deploy-frontend'
         uses: 'google-github-actions/deploy-cloudrun@v0'
         with:
           service: 'myappfrontend'
           image: '${{ secrets.ARTIFACT_REGISTRY }}/myappfrontend:latest'
+          env_vars: 'BACKEND_URL=VALUE1'
 
-      - name: 'Health check Backend'
+      
+      - name: 'Health check Frontend'
         run: 'curl "${{ steps.deploy-frontend.outputs.url }}"'
 
-      - name: Health check Frontend
-        run: 'curl "${{ steps.deploy-backend.outputs.url }}"'
+
+      
