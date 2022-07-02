@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
+require('dotenv').config();
+
 function App() {
    	const [data, setData] = useState([]);
 
 	useEffect(() => {
-		fetch("$BACKEND_URL")
+		fetch(process.env.BACKEND_URL)
 		 .then((res) => res.json())
       		 .then((result) => setData(result))
       		 .catch((err) => console.log("error"));
