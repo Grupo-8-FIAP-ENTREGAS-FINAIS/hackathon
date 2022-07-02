@@ -47,7 +47,7 @@ jobs:
           docker build -t ${{ secrets.ARTIFACT_REGISTRY }}/myappbackend:latest ./kit-hackathon-aso/backend/
           docker push ${{ secrets.ARTIFACT_REGISTRY }}/myappbackend:latest
           #Frontend
-          docker build --build-arg BACKEND_URL=https://myappfrontend-oxfs72ct2q-uc.a.run.app/ -t ${{ secrets.ARTIFACT_REGISTRY }}/myappfrontend:latest ./kit-hackathon-aso/frontend/
+          docker build -t ${{ secrets.ARTIFACT_REGISTRY }}/myappfrontend:latest ./kit-hackathon-aso/frontend/
           docker push ${{ secrets.ARTIFACT_REGISTRY }}/myappfrontend:latest
 
   DeployProd:
