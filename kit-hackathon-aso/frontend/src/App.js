@@ -5,8 +5,10 @@ import "./App.css";
 function App() {
    	const [data, setData] = useState([]);
 
+  let url = process.env.BACKEND_URL? process.env.BACKEND_URL: "https://myappbackend-oxfs72ct2q-uc.a.run.app/"
+
 	useEffect(() => {
-		fetch('https://myappbackend-oxfs72ct2q-uc.a.run.app')
+		fetch(url)
 		 .then((res) => res.json())
       		 .then((result) => setData(result))
       		 .catch((err) => console.log("error"));
